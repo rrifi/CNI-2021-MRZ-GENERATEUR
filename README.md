@@ -1,4 +1,4 @@
-# CNI-2021-MRZ-GENERATEUR
+# CNI-2021-MRZ-GENERATEUR-by-RiFi
 
 Generateur de la bande MRZ de la nouvelle CNI française
 
