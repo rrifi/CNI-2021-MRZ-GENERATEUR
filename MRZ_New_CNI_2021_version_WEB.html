@@ -1,0 +1,193 @@
+
+<input type="text" id="nom" onkeyup="this.value = this.value.toUpperCase();" value="Nom"><br>
+<input type="text" id="prenom" onkeyup="this.value = this.value.toUpperCase();" value="Prenom(s) "><br>
+
+<input type="text" id="nodoc" onkeyup="this.value = this.value.toUpperCase();" value="NDocument" > <br>
+
+
+<label for="genre">Genre : </label>
+<select id="genre" >
+  <option value="M">M</option>
+  <option value="F">F</option>
+</select>
+<br>
+
+Naissance : <input type="date" id="dateNaiss" value="1984-07-22"><br>
+Expiration : <input type="date" id="dateExp" value="2035-12-05"><br>
+
+
+<input type="submit" value="GENERER LA MRZ" onclick="printMRZ()">
+
+<!-- <button onclick="printMRZ()"> Generer la MRZ </button> pattern=".{9}"!-->
+<br><br>
+
+<textarea id="textAreaMRZ" rows="3" cols="30">
+</textarea>
+
+<script>
+
+
+function printMRZ()
+{
+
+	var numDoc  = document.getElementById("nodoc").value ;
+	
+	if (numDoc.length != 9) {
+		
+		alert("le numero de document doit comporter 9 caracteres");
+		
+		return ;
+	
+	}
+	
+	mrz1 = "IDFRA"+numDoc+getCheckDigit(numDoc)+"<<<<<<<<<<<<<<<" ; // 1ere ligne MRZ
+	
+	
+	//**********************************************************************************************
+	var dateExp = document.getElementById("dateExp").value ;
+	var dateNaiss = document.getElementById("dateNaiss").value ;
+	
+	var dateDeliv = new Date(dateExp); 
+	var duration = 1;
+	dateDeliv.setFullYear(dateDeliv.getFullYear() - 10);
+	
+	
+	dateDeliv.setTime(dateDeliv.getTime() +  (duration * 24 * 60 * 60 * 1000));
+	
+	
+	
+	var genre = document.getElementById("genre").value;
+	
+	dateExp = dateExp.split('-').join('').substring(2);
+	dateNaiss = dateNaiss.split('-').join('').substring(2);
+	
+	lastDigit = getCheckDigit(numDoc+getCheckDigit(numDoc)+dateNaiss+getCheckDigit(dateNaiss)+dateExp+getCheckDigit(dateExp));
+	
+	var mrz2 = dateNaiss+getCheckDigit(dateNaiss)+genre+dateExp+getCheckDigit(dateExp)+"FRA<<<<<<<<<<<"+lastDigit; // 2eme ligne mrz
+	
+	//alert(mrz2);
+	//**********************************************************************************************
+	var nom = document.getElementById("nom").value ;
+	var prenom = document.getElementById("prenom").value ;
+	
+	
+	nom = nom.split('-').join('<') ;
+	nom = nom.split(' ').join('<') ;
+	nom = nom.split(',').join('<') ;
+	
+	prenom = prenom.split('-').join('<') ;
+	prenom = prenom.split(' ').join('<') ;
+	prenom = prenom.split(',').join('<') ;
+	
+	nom = nom.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+	prenom = prenom.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+	
+	var mrz3 = nom+"<<"+prenom; // 3eme ligne mrz
+	
+	while (mrz3.length != 30) mrz3 += "<" ;
+	
+	
+	//**********************************************************************************************
+	document.getElementById("textAreaMRZ").value = mrz1+mrz2+mrz3 ;	
+	alert("Date de Delivrance : "+formatDate(dateDeliv));
+
+}
+
+
+function getCheckDigit(string) 
+{
+	string = string.toUpperCase();
+	var keyStrPair = initArray();
+	var compteur = 0 ;
+	var total =0 ;
+
+	
+
+	for (var i = 0; i < string.length; i++) {
+		
+		if (compteur == 3) compteur = 0
+		for (const [key, value] of Object.entries(keyStrPair)) {
+		
+			if (key == string[i]) {
+		
+				if (compteur==0) total += value*7 ;
+				if (compteur==1) total += value*3 ;
+				if (compteur==2) total += value*1 ;
+			}
+			
+
+		}
+		compteur = compteur + 1 ;
+	}
+	
+	//document.write(total)
+	checkDigit = total % 10;
+	
+	return(checkDigit);
+
+
+}
+
+/////////////////////////DECLARATION TABLEAU//////////////////////////
+function initArray()
+{
+
+var keyStrPair = {};
+keyStrPair['1'] = 1;
+keyStrPair['2'] = 2;
+keyStrPair['3'] = 3;
+keyStrPair['4'] = 4;
+keyStrPair['5'] = 5;
+keyStrPair['6'] = 6;
+keyStrPair['7'] = 7;
+keyStrPair['8'] = 8;
+keyStrPair['9'] = 9;
+
+keyStrPair['A'] = 10;
+keyStrPair['B'] = 11;
+keyStrPair['C'] = 12;
+keyStrPair['D'] = 13;
+keyStrPair['E'] = 14;
+keyStrPair['F'] = 15;
+keyStrPair['G'] = 16;
+keyStrPair['H'] = 17;
+keyStrPair['I'] = 18;
+keyStrPair['J'] = 19;
+
+keyStrPair['K'] = 20;
+keyStrPair['L'] = 21;
+keyStrPair['M'] = 22;
+keyStrPair['N'] = 23;
+keyStrPair['O'] = 24;
+keyStrPair['P'] = 25;
+keyStrPair['Q'] = 26;
+keyStrPair['R'] = 27;
+keyStrPair['S'] = 28;
+keyStrPair['T'] = 29;
+
+keyStrPair['U'] = 30;
+keyStrPair['V'] = 31;
+keyStrPair['W'] = 32;
+keyStrPair['X'] = 33;
+keyStrPair['Y'] = 34;
+keyStrPair['Z'] = 35;
+
+return keyStrPair ;
+
+}
+
+function formatDate(inputFormat) 
+{
+  function pad(s) { return (s < 10) ? '0' + s : s; }
+  var d = new Date(inputFormat)
+  return [pad(d.getDate()), pad(d.getMonth()+1), d.getFullYear()].join('/')
+}
+
+
+Date.prototype.addDays = function(days) {
+    var date = new Date(this.valueOf());
+    date.setDate(date.getDate() + days);
+    return date;
+}
+
+</script>
